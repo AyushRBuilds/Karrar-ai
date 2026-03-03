@@ -317,6 +317,7 @@ export function Landing({ onLogin }) {
                             whileHover={{ scale: 1.04, borderColor: "rgba(196,158,108,0.5)" }}
                             whileTap={{ scale: 0.97 }}
                             className="btn-ghost" style={{ padding: "18px 31px", fontSize: 18 }}
+                            onClick={() => window.open('https://youtu.be/J4dZgE_iFiA', '_blank')}
                         >Watch Demo →</motion.button>
                     </motion.div>
 
