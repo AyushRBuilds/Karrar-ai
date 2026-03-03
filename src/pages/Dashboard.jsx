@@ -126,9 +126,22 @@ export function Dashboard({ user, onLogout }) {
     const [sideW, setSideW] = useState(188);
     const [rightW, setRightW] = useState(228);
     const [collapsed, setCollapsed] = useState(false);
+    const [isMobile, setIsMobile] = useState(typeof window !== 'undefined' && window.innerWidth <= 768);
     const COLLAPSED_W = 52;
     const EXPANDED_W = sideW;
     const currentSideW = collapsed ? COLLAPSED_W : EXPANDED_W;
+
+    // ── Auto-collapse sidebar on mobile ──
+    useEffect(() => {
+        const check = () => {
+            const mobile = window.innerWidth <= 768;
+            setIsMobile(mobile);
+            if (mobile) setCollapsed(true);
+        };
+        check();
+        window.addEventListener('resize', check);
+        return () => window.removeEventListener('resize', check);
+    }, []);
 
     const startDrag = (which) => (e) => {
         if (collapsed && which === "side") return;
@@ -422,6 +435,43 @@ Ground all findings in Indian Contract Act 1872, DPDP Act 2023, and Indian statu
         @keyframes shimmer{0%{background-position:-200% 0}100%{background-position:200% 0}}
         .locked-zone{position:relative;border-radius:16px;overflow:hidden;}
         .locked-overlay{position:absolute;inset:0;background:rgba(7,8,9,0.88);backdrop-filter:blur(4px);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;border-radius:16px;border:2px dashed rgba(196,158,108,0.2);}
+
+        /* ── DASHBOARD RESPONSIVE GRIDS ── */
+        .dash-stats-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:14px; margin-bottom:20px; }
+        .dash-agents-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+        .dash-analysis-agents { display:grid; grid-template-columns:repeat(3,1fr); gap:9px; }
+
+        /* ── DASHBOARD TOP NAV ── */
+        .dash-topnav { display:flex; gap:1px; flex:1; overflow-x:auto; -webkit-overflow-scrolling:touch; }
+        .dash-topnav::-webkit-scrollbar { display:none; }
+        .dash-search-box { position:relative; }
+        .dash-plan-btn, .dash-notif-btn, .dash-user-btn { flex-shrink: 0; }
+
+        /* ── DASHBOARD MOBILE ── */
+        @media (max-width: 768px) {
+          .dash-sidebar { display:none !important; }
+          .dash-drag-handle { display:none !important; }
+          .dash-right-panel { display:none !important; }
+          .dash-right-drag { display:none !important; }
+          .dash-search-box { display:none !important; }
+          .dash-plan-btn { display:none !important; }
+          .dash-notif-btn { display:none !important; }
+          .dash-user-btn span { display:none !important; }
+
+          .dash-topnav { gap:0; flex:1; min-width:0; }
+          .dash-topnav button { padding:4px 8px !important; font-size:12px !important; white-space:nowrap; }
+
+          .dash-main { padding:16px 12px !important; }
+          .dash-stats-grid { grid-template-columns:1fr 1fr; gap:10px; }
+          .dash-agents-grid { grid-template-columns:1fr; gap:12px; }
+          .dash-analysis-agents { grid-template-columns:1fr 1fr; gap:8px; }
+          .dash-contracts-row { flex-direction:column !important; gap:8px !important; }
+          .dash-contracts-row .qbtn { width:100%; }
+        }
+        @media (max-width: 480px) {
+          .dash-stats-grid { grid-template-columns:1fr; gap:8px; }
+          .dash-analysis-agents { grid-template-columns:1fr; }
+        }
       `}</style>
 
             {/* ── MODALS ─────────────────────────────────────────────────── */}
@@ -432,22 +482,22 @@ Ground all findings in Indian Contract Act 1872, DPDP Act 2023, and Indian statu
             </AnimatePresence>
 
             {/* ── TOPNAV ─────────────────────────────────────────────────── */}
-            <nav style={{ position: "sticky", top: 0, zIndex: 100, background: "rgba(7,8,9,0.97)", backdropFilter: "blur(20px)", borderBottom: "1px solid #0F1115", padding: "0 22px", height: 56, display: "flex", alignItems: "center", gap: 18, flexShrink: 0 }}>
-                <KarrarLogo size={26} wordmark={true} />
-                <div style={{ flex: 1, display: "flex", gap: 1 }}>
+            <nav style={{ position: "sticky", top: 0, zIndex: 100, background: "rgba(7,8,9,0.97)", backdropFilter: "blur(20px)", borderBottom: "1px solid #0F1115", padding: "0 12px", height: 56, display: "flex", alignItems: "center", gap: 10, flexShrink: 0 }}>
+                <KarrarLogo size={26} wordmark={!isMobile} />
+                <div className="dash-topnav">
                     {NAV.map(({ k, ic, badge }) => (
-                        <button key={k} onClick={() => setActiveNav(k)} style={{ background: "none", border: "none", color: activeNav === k ? "#C49E6C" : "#555", fontSize: 13, fontWeight: activeNav === k ? 600 : 400, padding: "4px 12px", cursor: "pointer", borderBottom: activeNav === k ? "2px solid #C49E6C" : "2px solid transparent", transition: "all 0.17s", fontFamily: "DM Sans,sans-serif", display: "flex", alignItems: "center", gap: 6, height: 56, position: "relative" }}>
+                        <button key={k} onClick={() => setActiveNav(k)} style={{ background: "none", border: "none", color: activeNav === k ? "#C49E6C" : "#555", fontSize: 13, fontWeight: activeNav === k ? 600 : 400, padding: "4px 12px", cursor: "pointer", borderBottom: activeNav === k ? "2px solid #C49E6C" : "2px solid transparent", transition: "all 0.17s", fontFamily: "DM Sans,sans-serif", display: "flex", alignItems: "center", gap: 6, height: 56, position: "relative", whiteSpace: "nowrap", flexShrink: 0 }}>
                             <span style={{ opacity: activeNav === k ? 1 : 0.4 }}>{ic}</span>{k}
                             {badge && <span style={{ background: "#C49E6C", color: "#000", borderRadius: "50%", width: 16, height: 16, fontSize: 9, fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center" }}>{badge}</span>}
                         </button>
                     ))}
                 </div>
-                <div style={{ position: "relative" }}>
+                <div className="dash-search-box">
                     <svg style={{ position: "absolute", left: 9, top: "50%", transform: "translateY(-50%)" }} width="12" height="12" fill="none" stroke="#333" strokeWidth="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" /></svg>
                     <input placeholder="Search contracts…" style={{ background: "#0D0F13", border: "1px solid #131518", borderRadius: 8, padding: "6px 12px 6px 28px", color: "#777", fontSize: 12, fontFamily: "DM Sans,sans-serif", outline: "none", width: 164 }} />
                 </div>
                 {/* Plan Dropdown */}
-                <div style={{ position: "relative" }} onMouseLeave={() => setPlanDropdownOpen(false)}>
+                <div className="dash-plan-btn" style={{ position: "relative" }} onMouseLeave={() => setPlanDropdownOpen(false)}>
                     <button
                         onClick={() => setPlanDropdownOpen(!planDropdownOpen)}
                         style={{ background: "transparent", border: "1px solid #1E2228", borderRadius: 8, padding: "6px 10px", cursor: "pointer", display: "flex", alignItems: "center", gap: 8, transition: "background 0.2s" }}
@@ -495,7 +545,7 @@ Ground all findings in Indian Contract Act 1872, DPDP Act 2023, and Indian statu
                         )}
                     </AnimatePresence>
                 </div>
-                <div style={{ position: "relative" }}>
+                <div className="dash-notif-btn" style={{ position: "relative" }}>
                     <button onClick={() => setNotifOpen(!notifOpen)} style={{ background: "none", border: "none", cursor: "pointer", color: notifOpen ? "#C49E6C" : "#444", padding: 5, position: "relative", transition: "color 0.17s" }}>
                         <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9" /><path d="M13.73 21a2 2 0 01-3.46 0" /></svg>
                         <span style={{ position: "absolute", top: 1, right: 1, width: 12, height: 12, background: "#ef4444", borderRadius: "50%", fontSize: 7, display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontWeight: 700 }}>3</span>
@@ -514,7 +564,7 @@ Ground all findings in Indian Contract Act 1872, DPDP Act 2023, and Indian statu
                         )}
                     </AnimatePresence>
                 </div>
-                <div style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer" }} onClick={onLogout} title="Click to logout">
+                <div className="dash-user-btn" style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer", flexShrink: 0 }} onClick={onLogout} title="Click to logout">
                     <div style={{ width: 29, height: 29, borderRadius: "50%", background: "linear-gradient(135deg,#C49E6C,#F5D08A)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 700, color: "#000" }}>{user.initials}</div>
                     <span style={{ fontSize: 12, color: "#BBB", fontWeight: 500 }}>{user.name}</span>
                 </div>
@@ -524,7 +574,7 @@ Ground all findings in Indian Contract Act 1872, DPDP Act 2023, and Indian statu
             <div style={{ display: "flex", flex: 1, overflow: "hidden", height: "calc(100vh - 56px)", userSelect: "none" }}>
 
                 {/* ── SIDEBAR ─────────────────────────────────────────────── */}
-                <aside style={{ width: currentSideW, minWidth: collapsed ? COLLAPSED_W : 150, maxWidth: collapsed ? COLLAPSED_W : 300, background: "#060708", borderRight: "none", display: "flex", flexDirection: "column", flexShrink: 0, overflowY: "auto", overflowX: "hidden", position: "relative", transition: "width 0.22s cubic-bezier(0.4,0,0.2,1)" }}>
+                <aside className="dash-sidebar" style={{ width: currentSideW, minWidth: collapsed ? COLLAPSED_W : 150, maxWidth: collapsed ? COLLAPSED_W : 300, background: "#060708", borderRight: "none", display: "flex", flexDirection: "column", flexShrink: 0, overflowY: "auto", overflowX: "hidden", position: "relative", transition: "width 0.22s cubic-bezier(0.4,0,0.2,1)" }}>
 
                     {/* Collapse toggle button */}
                     <div style={{ display: "flex", alignItems: "center", justifyContent: collapsed ? "center" : "flex-end", padding: collapsed ? "10px 0" : "10px 10px 4px", flexShrink: 0 }}>
@@ -600,7 +650,7 @@ Ground all findings in Indian Contract Act 1872, DPDP Act 2023, and Indian statu
 
                 {/* ── LEFT DRAG HANDLE (hidden when collapsed) ── */}
                 {!collapsed && (
-                    <div onMouseDown={startDrag("side")} style={{ width: 4, background: "#0F1115", cursor: "col-resize", flexShrink: 0, position: "relative", transition: "background 0.15s", zIndex: 10 }}
+                    <div className="dash-drag-handle" onMouseDown={startDrag("side")} style={{ width: 4, background: "#0F1115", cursor: "col-resize", flexShrink: 0, position: "relative", transition: "background 0.15s", zIndex: 10 }}
                         onMouseEnter={e => e.currentTarget.style.background = "#C49E6C44"}
                         onMouseLeave={e => e.currentTarget.style.background = "#0F1115"}>
                         <div style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%,-50%)", display: "flex", flexDirection: "column", gap: 3 }}>
@@ -608,10 +658,10 @@ Ground all findings in Indian Contract Act 1872, DPDP Act 2023, and Indian statu
                         </div>
                     </div>
                 )}
-                {collapsed && <div style={{ width: 1, background: "#0F1115", flexShrink: 0 }} />}
+                {collapsed && <div className="dash-drag-handle" style={{ width: 1, background: "#0F1115", flexShrink: 0 }} />}
 
                 {/* ── MAIN ────────────────────────────────────────────────── */}
-                <main style={{ flex: 1, overflowY: "auto", padding: "24px 26px", minWidth: 0 }}>
+                <main className="dash-main" style={{ flex: 1, overflowY: "auto", padding: "24px 26px", minWidth: 0 }}>
                     <AnimatePresence mode="wait">
 
                         {/* ═══ HOME ══════════════════════════════════════════════ */}
@@ -621,7 +671,7 @@ Ground all findings in Indian Contract Act 1872, DPDP Act 2023, and Indian statu
                                     <h1 style={{ fontFamily: "Playfair Display,serif", fontSize: 31, fontWeight: 700, marginBottom: 4 }}>{(user?.name || "User").split(" ")[0]}'s Karrarnamas</h1>
                                     <p style={{ fontSize: 14, color: "#444" }}>Audit, analyze, and negotiate your contracts — powered by 6 AI agents grounded in Indian law.</p>
                                 </div>
-                                <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 14, marginBottom: 20 }}>
+                                <div className="dash-stats-grid">
                                     {[
                                         { v: <AnimatedNumber value={contractHistory.length || 0} />, l: "Total Analyzed", c: "#C49E6C", icon: <svg width="18" height="18" fill="none" stroke="#C49E6C" strokeWidth="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" /><polyline points="14 2 14 8 20 8" /></svg> },
                                         { v: <AnimatedNumber value={contractHistory.filter(c => c.riskLevel === "High" || c.riskLevel === "Critical").length || 0} />, l: "High Risk Contracts", c: "#ef4444", icon: <svg width="18" height="18" fill="none" stroke="#ef4444" strokeWidth="2" viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" /><line x1="12" y1="9" x2="12" y2="13" /><line x1="12" y1="17" x2="12.01" y2="17" /></svg> },
@@ -693,7 +743,7 @@ Ground all findings in Indian Contract Act 1872, DPDP Act 2023, and Indian statu
                                         <div style={{ background: "#131518", borderRadius: 6, height: 5, overflow: "hidden", marginBottom: 18 }}>
                                             <motion.div animate={{ width: `${analysisPct}%` }} transition={{ duration: 0.75, ease: "easeOut" }} style={{ height: "100%", background: "linear-gradient(90deg,#C49E6C,#F5D08A)", borderRadius: 6 }} />
                                         </div>
-                                        <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 9 }}>
+                                        <div className="dash-analysis-agents">
                                             {AGENTS.map(({ id, name, color, icon }) => {
                                                 const si = STEPS.findIndex(s => s.agent === id);
                                                 const done = si > 0 && analysisStep > si;
@@ -818,7 +868,7 @@ Ground all findings in Indian Contract Act 1872, DPDP Act 2023, and Indian statu
                         {/* ═══ CONTRACTS ════════════════════════════════════════ */}
                         {activeNav === "Contracts" && (
                             <motion.div key="contracts" initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.38 }}>
-                                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 22 }}>
+                                <div className="dash-contracts-row" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 22 }}>
                                     <div><h1 style={{ fontFamily: "Playfair Display,serif", fontSize: 29, fontWeight: 700, marginBottom: 2 }}>Contracts</h1><p style={{ fontSize: 14, color: "#444" }}>{contractHistory.length} contracts analyzed and saved.</p></div>
                                     <motion.button whileHover={{ scale: 1.03 }} className="gbtn" style={{ fontSize: 14, padding: "9px 16px" }} onClick={() => { setActiveNav("Home"); setUploadPhase("idle"); }}>+ Analyze New</motion.button>
                                 </div>
@@ -884,7 +934,7 @@ Ground all findings in Indian Contract Act 1872, DPDP Act 2023, and Indian statu
                                     <h1 style={{ fontFamily: "Playfair Display,serif", fontSize: 29, fontWeight: 700, marginBottom: 2 }}>Swarm Architecture</h1>
                                     <p style={{ fontSize: 14, color: "#444" }}>How your contracts are analyzed by 6 specialized AI models concurrently.</p>
                                 </div>
-                                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+                                <div className="dash-agents-grid">
                                     {AGENTS.map((a, i) => {
                                         const isHovered = hoveredAgent === a.id;
 
@@ -1562,7 +1612,7 @@ Ground all findings in Indian Contract Act 1872, DPDP Act 2023, and Indian statu
                 )}
 
                 {/* ── RIGHT PANEL CONTENT ── */}
-                <aside
+                <aside className="dash-right-panel"
                     style={{
                         width: collapsed ? 0 : rightW,
                         minWidth: collapsed ? 0 : Math.min(rightW, 200),
